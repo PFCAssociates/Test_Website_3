@@ -3,9 +3,1047 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Title Text Test 1</title>
+  <title>AI-Powered Development Demo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --accent3: #ec4899;
+      --bg: #0a0a1a;
+      --surface: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      width: 20px; height: 20px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      transition: transform 0.15s ease, border-color 0.3s;
+      transform: translate(-50%, -50%);
+    }
+    .cursor-dot {
+      width: 5px; height: 5px;
+      background: var(--accent3);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 10001;
+      transform: translate(-50%, -50%);
+    }
+    .cursor.hovering { transform: translate(-50%, -50%) scale(2); border-color: var(--accent3); }
+
+    /* Particle canvas */
+    #particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+
+    /* Gradient orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.3;
+      z-index: 0;
+      animation: float 20s ease-in-out infinite;
+    }
+    .orb-1 { width: 600px; height: 600px; background: var(--accent); top: -200px; left: -100px; }
+    .orb-2 { width: 500px; height: 500px; background: var(--accent3); bottom: -200px; right: -100px; animation-delay: -7s; }
+    .orb-3 { width: 400px; height: 400px; background: var(--accent2); top: 50%; left: 50%; animation-delay: -14s; }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(50px, -80px) scale(1.1); }
+      50% { transform: translate(-30px, 60px) scale(0.9); }
+      75% { transform: translate(70px, 30px) scale(1.05); }
+    }
+
+    /* Sections */
+    section {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 40px;
+    }
+
+    .container { max-width: 1200px; width: 100%; }
+
+    /* Hero */
+    .hero-content { text-align: center; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      border-radius: 100px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--accent);
+      margin-bottom: 32px;
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards;
+    }
+    .badge .dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse-dot 2s infinite; }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.5); }
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.2s forwards;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent), var(--accent3), var(--accent2));
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradient-shift 5s ease infinite;
+    }
+
+    @keyframes gradient-shift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .hero-sub {
+      font-size: clamp(1.1rem, 2vw, 1.4rem);
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 48px;
+      line-height: 1.6;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.4s forwards;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CTA buttons */
+    .cta-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.6s forwards;
+    }
+
+    .btn {
+      padding: 16px 36px;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      border: none;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(99,102,241,0.3); }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+    .btn-secondary:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 1s forwards;
+    }
+    .scroll-indicator span { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
+    .scroll-line {
+      width: 1px; height: 60px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+      animation: scroll-pulse 2s ease infinite;
+    }
+    @keyframes scroll-pulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+      50% { opacity: 1; transform: scaleY(1); }
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 80px;
+      border: 1px solid var(--border);
+    }
+    .stat {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      padding: 32px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* Feature cards */
+    .section-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+    }
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 600px;
+      line-height: 1.6;
+      margin-bottom: 64px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      backdrop-filter: blur(20px);
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(99,102,241,0.1), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .card:hover::before { opacity: 1; }
+    .card:hover { border-color: rgba(99,102,241,0.3); transform: translateY(-4px); }
+
+    .card-icon {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
+      border: 1px solid rgba(99,102,241,0.2);
+    }
+    .card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; }
+    .card p { color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; }
+
+    /* Code showcase */
+    .code-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    @media (max-width: 768px) { .code-section { grid-template-columns: 1fr; } }
+
+    .code-window {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .code-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .code-dot:nth-child(1) { background: #ef4444; }
+    .code-dot:nth-child(2) { background: #eab308; }
+    .code-dot:nth-child(3) { background: #22c55e; }
+    .code-filename {
+      margin-left: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .code-body {
+      padding: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+    .code-line { display: flex; gap: 16px; }
+    .line-num { color: rgba(255,255,255,0.15); user-select: none; min-width: 24px; text-align: right; }
+    .keyword { color: #c084fc; }
+    .func { color: #60a5fa; }
+    .string { color: #34d399; }
+    .comment { color: #4b5563; font-style: italic; }
+    .variable { color: #f472b6; }
+    .operator { color: #94a3b8; }
+
+    .typing-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--accent);
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* 3D card stack */
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 16px;
+      perspective: 1000px;
+    }
+    .showcase-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      backdrop-filter: blur(20px);
+      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .showcase-card:hover { transform: rotateY(-5deg) rotateX(5deg) scale(1.02); border-color: var(--accent); }
+    .showcase-card h4 { font-size: 1rem; margin-bottom: 8px; }
+    .showcase-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* Interactive demo section */
+    .demo-area {
+      width: 100%;
+      min-height: 400px;
+      border-radius: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+    }
+    .demo-header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .demo-tabs { display: flex; gap: 4px; }
+    .demo-tab {
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+    .demo-tab.active { background: rgba(99,102,241,0.15); color: var(--accent); }
+    .demo-tab:hover { color: var(--text); }
+    .demo-canvas { width: 100%; height: 360px; display: block; }
+
+    /* Visualizer bars */
+    .visualizer {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
+      height: 100%;
+      padding: 40px;
+    }
+    .viz-bar {
+      width: 8px;
+      border-radius: 4px;
+      background: linear-gradient(to top, var(--accent), var(--accent3));
+      transition: height 0.3s ease;
+      animation: vizPulse var(--duration) ease-in-out infinite alternate;
+      animation-delay: var(--delay);
+    }
+    @keyframes vizPulse {
+      0% { height: var(--min-h); opacity: 0.5; }
+      100% { height: var(--max-h); opacity: 1; }
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 40px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent3), transparent);
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 48px;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -44px;
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 20px rgba(99,102,241,0.5);
+    }
+    .timeline-item h4 { font-size: 1.1rem; margin-bottom: 8px; }
+    .timeline-item p { color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; }
+    .timeline-time { font-size: 0.8rem; color: var(--accent); font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 60px 40px;
+      border-top: 1px solid var(--border);
+    }
+    footer p { color: var(--text-muted); font-size: 0.9rem; }
+    footer .footer-brand { font-weight: 700; font-size: 1.1rem; color: var(--text); margin-bottom: 8px; }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      section { padding: 60px 20px; }
+      .showcase-grid { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: 1fr; }
+      body { cursor: auto; }
+      .cursor, .cursor-dot { display: none; }
+    }
+  </style>
 </head>
 <body>
-Hello this is a body text created by claude!
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <canvas id="particles"></canvas>
+
+  <!-- Hero -->
+  <section id="hero">
+    <div class="container hero-content">
+      <div class="badge"><span class="dot"></span> Built entirely by AI</div>
+      <h1 class="hero-title">
+        <span class="gradient-text">Code at the</span><br>
+        <span class="gradient-text">Speed of Thought</span>
+      </h1>
+      <p class="hero-sub">
+        This entire page was designed, coded, and deployed autonomously by Claude &mdash;
+        demonstrating what's possible when AI meets software engineering.
+      </p>
+      <div class="cta-group">
+        <a href="#features" class="btn btn-primary">Explore Features &darr;</a>
+        <a href="#demo" class="btn btn-secondary">Live Demo &rarr;</a>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section>
+    <div class="container">
+      <div class="stats-bar reveal">
+        <div class="stat">
+          <div class="stat-value" data-target="500" data-suffix="+">0</div>
+          <div class="stat-label">Lines of Code</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" data-target="0" data-suffix=" sec" data-decimal="true" data-actual="< 60">0</div>
+          <div class="stat-label">Seconds to Build</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" data-target="4">0</div>
+          <div class="stat-label">Interactive Demos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" data-target="100" data-suffix="%">0</div>
+          <div class="stat-label">AI Generated</div>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <div class="section-label">Capabilities</div>
+        <h2 class="section-title">What AI Can Build</h2>
+        <p class="section-desc">From responsive layouts to interactive animations, AI-powered development handles the full stack.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card reveal">
+          <div class="card-icon">&#9672;</div>
+          <h3>Responsive Design</h3>
+          <p>Fluid layouts, mobile-first approach, and adaptive components that work on every screen size.</p>
+        </div>
+        <div class="card reveal">
+          <div class="card-icon">&#10024;</div>
+          <h3>Animations &amp; Transitions</h3>
+          <p>Smooth CSS animations, particle systems, and interactive visual effects &mdash; all performant.</p>
+        </div>
+        <div class="card reveal">
+          <div class="card-icon">&#9000;</div>
+          <h3>Canvas Graphics</h3>
+          <p>Real-time particle simulations, data visualizations, and generative art on HTML5 Canvas.</p>
+        </div>
+        <div class="card reveal">
+          <div class="card-icon">&#8942;</div>
+          <h3>Modern UI Patterns</h3>
+          <p>Glassmorphism, custom cursors, scroll-triggered reveals, and contemporary design systems.</p>
+        </div>
+        <div class="card reveal">
+          <div class="card-icon">&#9881;</div>
+          <h3>Interactive Components</h3>
+          <p>Tabbed interfaces, live demos, and user-responsive elements with zero dependencies.</p>
+        </div>
+        <div class="card reveal">
+          <div class="card-icon">&#9889;</div>
+          <h3>Zero Dependencies</h3>
+          <p>Pure HTML, CSS, and JavaScript. No frameworks, no build tools &mdash; just clean, efficient code.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Code Showcase -->
+  <section>
+    <div class="container">
+      <div class="code-section">
+        <div class="reveal">
+          <div class="section-label">Under the Hood</div>
+          <h2 class="section-title">Clean, Readable Code</h2>
+          <p class="section-desc">Every line is structured, semantic, and maintainable. AI doesn't just write code &mdash; it writes <em>good</em> code.</p>
+
+          <div class="showcase-grid">
+            <div class="showcase-card">
+              <h4>Semantic HTML</h4>
+              <p>Proper structure with accessibility in mind.</p>
+            </div>
+            <div class="showcase-card">
+              <h4>Modern CSS</h4>
+              <p>Custom properties, grid, clamp(), and backdrop-filter.</p>
+            </div>
+            <div class="showcase-card">
+              <h4>Vanilla JS</h4>
+              <p>Performant animations with requestAnimationFrame.</p>
+            </div>
+            <div class="showcase-card">
+              <h4>Responsive</h4>
+              <p>Fluid typography and adaptive layouts throughout.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-window reveal">
+          <div class="code-header">
+            <div class="code-dot"></div>
+            <div class="code-dot"></div>
+            <div class="code-dot"></div>
+            <span class="code-filename">particles.js</span>
+          </div>
+          <div class="code-body" id="codeBlock">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Demo -->
+  <section id="demo">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">Interactive</div>
+        <h2 class="section-title">Live Demos</h2>
+        <p class="section-desc">Real-time interactive visualizations running right in your browser.</p>
+      </div>
+
+      <div class="demo-area reveal">
+        <div class="demo-header">
+          <div class="demo-tabs">
+            <button class="demo-tab active" data-demo="waves">Waves</button>
+            <button class="demo-tab" data-demo="matrix">Matrix</button>
+            <button class="demo-tab" data-demo="constellation">Constellation</button>
+            <button class="demo-tab" data-demo="bars">Visualizer</button>
+          </div>
+        </div>
+        <canvas class="demo-canvas" id="demoCanvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Timeline -->
+  <section>
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">Process</div>
+        <h2 class="section-title">How It Was Built</h2>
+        <p class="section-desc">From prompt to production in a single conversation.</p>
+      </div>
+
+      <div class="timeline reveal">
+        <div class="timeline-item">
+          <div class="timeline-time">Step 01</div>
+          <h4>Receive the Brief</h4>
+          <p>A single sentence prompt: "Come up with a visually impressive project." That's all it took to kick off the entire build.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">Step 02</div>
+          <h4>Architecture &amp; Design</h4>
+          <p>Planned the layout, chose a color palette, designed the component hierarchy, and structured the animation systems.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">Step 03</div>
+          <h4>Implementation</h4>
+          <p>Wrote all HTML, CSS, and JavaScript in a single file. Particle systems, interactive demos, responsive design &mdash; everything.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">Step 04</div>
+          <h4>Deploy</h4>
+          <p>Committed the code, pushed to the repository, and automated deployment handled the rest. Live in seconds.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-brand">Built with Claude</p>
+    <p>Designed, coded, and deployed autonomously &mdash; zero human code written.</p>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const cursorDot = document.getElementById('cursorDot');
+    let mouseX = 0, mouseY = 0, curX = 0, curY = 0;
+
+    document.addEventListener('mousemove', e => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursorDot.style.left = mouseX + 'px';
+      cursorDot.style.top = mouseY + 'px';
+    });
+
+    function animateCursor() {
+      curX += (mouseX - curX) * 0.15;
+      curY += (mouseY - curY) * 0.15;
+      cursor.style.left = curX + 'px';
+      cursor.style.top = curY + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    document.querySelectorAll('a, button, .card, .showcase-card').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+    });
+
+    // Card mouse tracking
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width * 100) + '%');
+        card.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100) + '%');
+      });
+    });
+
+    // Particle system
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = (Math.random() - 0.5) * 0.5;
+        this.speedY = (Math.random() - 0.5) * 0.5;
+        this.opacity = Math.random() * 0.5 + 0.1;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(99, 102, 241, ${this.opacity})`;
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+    function drawConnections() {
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(99, 102, 241, ${0.08 * (1 - dist / 150)})`;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      drawConnections();
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Counter animation
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseInt(el.dataset.target);
+          const suffix = el.dataset.suffix || '';
+          const actual = el.dataset.actual;
+          if (actual) { el.textContent = actual; return; }
+          let current = 0;
+          const step = target / 60;
+          const counter = setInterval(() => {
+            current += step;
+            if (current >= target) { current = target; clearInterval(counter); }
+            el.textContent = Math.floor(current) + suffix;
+          }, 20);
+          counterObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.stat-value').forEach(el => counterObserver.observe(el));
+
+    // Code typing effect
+    const codeLines = [
+      { num: '1', content: '<span class="keyword">class</span> <span class="func">Particle</span> {' },
+      { num: '2', content: '  <span class="func">constructor</span>() {' },
+      { num: '3', content: '    <span class="keyword">this</span>.pos = <span class="func">randomVec2</span>();' },
+      { num: '4', content: '    <span class="keyword">this</span>.vel = <span class="func">randomVec2</span>();' },
+      { num: '5', content: '    <span class="keyword">this</span>.size = <span class="variable">Math</span>.<span class="func">random</span>() * <span class="string">2</span>;' },
+      { num: '6', content: '  }' },
+      { num: '7', content: '' },
+      { num: '8', content: '  <span class="func">update</span>() {' },
+      { num: '9', content: '    <span class="keyword">this</span>.pos.<span class="func">add</span>(<span class="keyword">this</span>.vel);' },
+      { num: '10', content: '    <span class="keyword">this</span>.<span class="func">edges</span>();' },
+      { num: '11', content: '  }' },
+      { num: '12', content: '' },
+      { num: '13', content: '  <span class="func">draw</span>(<span class="variable">ctx</span>) {' },
+      { num: '14', content: '    <span class="variable">ctx</span>.<span class="func">beginPath</span>();' },
+      { num: '15', content: '    <span class="variable">ctx</span>.<span class="func">arc</span>(<span class="keyword">this</span>.pos, <span class="keyword">this</span>.size);' },
+      { num: '16', content: '    <span class="variable">ctx</span>.<span class="func">fill</span>();' },
+      { num: '17', content: '  }' },
+      { num: '18', content: '}' },
+    ];
+
+    const codeBlock = document.getElementById('codeBlock');
+    let lineIndex = 0;
+
+    const codeObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          typeCode();
+          codeObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    codeObserver.observe(codeBlock);
+
+    function typeCode() {
+      if (lineIndex >= codeLines.length) return;
+      const line = codeLines[lineIndex];
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.innerHTML = `<span class="line-num">${line.num}</span><span>${line.content}</span>`;
+      codeBlock.appendChild(div);
+      lineIndex++;
+      setTimeout(typeCode, 80);
+    }
+
+    // Interactive demos
+    const demoCanvas = document.getElementById('demoCanvas');
+    const dCtx = demoCanvas.getContext('2d');
+    let currentDemo = 'waves';
+    let demoFrame;
+    let demoMouseX = 0, demoMouseY = 0;
+
+    function resizeDemo() {
+      const rect = demoCanvas.parentElement.getBoundingClientRect();
+      demoCanvas.width = demoCanvas.offsetWidth;
+      demoCanvas.height = 360;
+    }
+    resizeDemo();
+    window.addEventListener('resize', resizeDemo);
+
+    demoCanvas.addEventListener('mousemove', e => {
+      const rect = demoCanvas.getBoundingClientRect();
+      demoMouseX = e.clientX - rect.left;
+      demoMouseY = e.clientY - rect.top;
+    });
+
+    document.querySelectorAll('.demo-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentDemo = tab.dataset.demo;
+      });
+    });
+
+    let waveOffset = 0;
+    let matrixDrops = [];
+    let constellationPts = [];
+
+    // Initialize matrix
+    function initMatrix() {
+      const cols = Math.floor(demoCanvas.width / 16);
+      matrixDrops = [];
+      for (let i = 0; i < cols; i++) {
+        matrixDrops.push({ x: i * 16, y: Math.random() * -500, speed: Math.random() * 3 + 2 });
+      }
+    }
+    initMatrix();
+
+    // Initialize constellation
+    function initConstellation() {
+      constellationPts = [];
+      for (let i = 0; i < 60; i++) {
+        constellationPts.push({
+          x: Math.random() * demoCanvas.width,
+          y: Math.random() * demoCanvas.height,
+          vx: (Math.random() - 0.5) * 1.5,
+          vy: (Math.random() - 0.5) * 1.5,
+          size: Math.random() * 3 + 1
+        });
+      }
+    }
+    initConstellation();
+
+    function drawDemo() {
+      dCtx.clearRect(0, 0, demoCanvas.width, demoCanvas.height);
+
+      if (currentDemo === 'waves') {
+        for (let wave = 0; wave < 5; wave++) {
+          dCtx.beginPath();
+          const baseY = demoCanvas.height / 2;
+          for (let x = 0; x <= demoCanvas.width; x += 4) {
+            const distFromMouse = Math.abs(x - demoMouseX);
+            const mouseInfluence = Math.max(0, 1 - distFromMouse / 300) * 40;
+            const y = baseY + Math.sin(x * 0.008 + waveOffset + wave * 0.8) * (40 + wave * 15 + mouseInfluence)
+                       + Math.sin(x * 0.02 + waveOffset * 1.5) * 15;
+            if (x === 0) dCtx.moveTo(x, y);
+            else dCtx.lineTo(x, y);
+          }
+          const hue = 240 + wave * 25;
+          dCtx.strokeStyle = `hsla(${hue}, 80%, 65%, ${0.4 - wave * 0.06})`;
+          dCtx.lineWidth = 2;
+          dCtx.stroke();
+        }
+        waveOffset += 0.03;
+      }
+
+      else if (currentDemo === 'matrix') {
+        dCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        dCtx.fillRect(0, 0, demoCanvas.width, demoCanvas.height);
+        dCtx.font = '14px JetBrains Mono, monospace';
+        matrixDrops.forEach(drop => {
+          const char = String.fromCharCode(0x30A0 + Math.random() * 96);
+          const brightness = Math.random() > 0.9 ? '255' : '100';
+          dCtx.fillStyle = `rgb(0, ${brightness}, 70)`;
+          dCtx.fillText(char, drop.x, drop.y);
+          drop.y += drop.speed;
+          if (drop.y > demoCanvas.height) { drop.y = -20; drop.speed = Math.random() * 3 + 2; }
+        });
+      }
+
+      else if (currentDemo === 'constellation') {
+        constellationPts.forEach(pt => {
+          pt.x += pt.vx; pt.y += pt.vy;
+          if (pt.x < 0 || pt.x > demoCanvas.width) pt.vx *= -1;
+          if (pt.y < 0 || pt.y > demoCanvas.height) pt.vy *= -1;
+          dCtx.beginPath();
+          dCtx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+          dCtx.fillStyle = 'rgba(139, 92, 246, 0.8)';
+          dCtx.fill();
+
+          // Mouse attraction
+          const dx = demoMouseX - pt.x, dy = demoMouseY - pt.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 200) {
+            pt.vx += dx * 0.0003;
+            pt.vy += dy * 0.0003;
+          }
+        });
+        // Connections
+        for (let i = 0; i < constellationPts.length; i++) {
+          for (let j = i + 1; j < constellationPts.length; j++) {
+            const dx = constellationPts[i].x - constellationPts[j].x;
+            const dy = constellationPts[i].y - constellationPts[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+              dCtx.beginPath();
+              dCtx.moveTo(constellationPts[i].x, constellationPts[i].y);
+              dCtx.lineTo(constellationPts[j].x, constellationPts[j].y);
+              dCtx.strokeStyle = `rgba(139, 92, 246, ${0.3 * (1 - dist / 120)})`;
+              dCtx.lineWidth = 1;
+              dCtx.stroke();
+            }
+          }
+        }
+      }
+
+      else if (currentDemo === 'bars') {
+        const barCount = 50;
+        const barWidth = (demoCanvas.width - 80) / barCount - 3;
+        const time = Date.now() * 0.002;
+        for (let i = 0; i < barCount; i++) {
+          const h = (Math.sin(time + i * 0.3) * 0.5 + 0.5) * (demoCanvas.height - 80)
+                    * (0.3 + 0.7 * Math.sin(time * 0.7 + i * 0.15));
+          const x = 40 + i * (barWidth + 3);
+          const y = demoCanvas.height - 40 - h;
+          const gradient = dCtx.createLinearGradient(x, y, x, demoCanvas.height - 40);
+          gradient.addColorStop(0, `hsl(${240 + i * 3}, 80%, 65%)`);
+          gradient.addColorStop(1, `hsl(${300 + i * 2}, 80%, 55%)`);
+          dCtx.fillStyle = gradient;
+          dCtx.beginPath();
+          dCtx.roundRect(x, y, barWidth, h, 3);
+          dCtx.fill();
+        }
+      }
+
+      requestAnimationFrame(drawDemo);
+    }
+    drawDemo();
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  </script>
 </body>
 </html>
