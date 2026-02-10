@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="build-version" content="1770692126">
+  <meta name="build-version" content="1770692305">
   <title>AI-Powered Development Demo</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
@@ -499,41 +499,104 @@
     /* Auto-refresh indicator */
     .update-indicator {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 24px;
+      right: 24px;
       z-index: 9999;
-      padding: 10px 18px;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      font-family: 'JetBrains Mono', monospace;
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-muted);
       display: flex;
       align-items: center;
-      gap: 8px;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.4s, transform 0.4s;
-      pointer-events: none;
+      gap: 0;
+      cursor: default;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     }
-    .update-indicator.visible { opacity: 1; transform: translateY(0); }
-    .update-indicator.found { border-color: #22c55e; color: #22c55e; }
-    .update-spinner {
-      width: 10px; height: 10px;
-      border: 2px solid var(--text-muted);
-      border-top-color: transparent;
+    .update-dot {
+      width: 12px; height: 12px;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      background: var(--text-muted);
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.4s, box-shadow 0.4s, transform 0.3s;
     }
-    .update-indicator.found .update-spinner {
-      border-color: #22c55e;
-      border-top-color: transparent;
+    .update-dot::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1.5px solid var(--text-muted);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .update-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      max-width: 0;
+      opacity: 0;
+      padding: 6px 0;
+      margin-right: 10px;
+      transition: max-width 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                  opacity 0.3s,
+                  padding 0.4s,
+                  color 0.4s;
+      backdrop-filter: blur(12px);
+      border-radius: 8px;
+    }
+    /* Idle state — small muted dot */
+    .update-indicator.idle .update-dot { background: rgba(148,163,184,0.4); }
+
+    /* Checking state — dot pulses, label slides out */
+    .update-indicator.checking .update-dot {
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(99,102,241,0.5);
+      animation: dotPulse 1.5s ease-in-out infinite;
+    }
+    .update-indicator.checking .update-dot::after {
+      opacity: 1;
+      border-color: var(--accent);
+      animation: ringPulse 1.5s ease-in-out infinite;
+    }
+    .update-indicator.checking .update-label {
+      max-width: 220px;
+      opacity: 1;
+      padding: 6px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* Found state — green, label stays open */
+    .update-indicator.found .update-dot {
+      background: #22c55e;
+      box-shadow: 0 0 20px rgba(34,197,94,0.6);
       animation: none;
-      border-top-color: #22c55e;
+      transform: scale(1.2);
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .update-indicator.found .update-dot::after {
+      opacity: 1;
+      border-color: #22c55e;
+      animation: none;
+    }
+    .update-indicator.found .update-label {
+      max-width: 280px;
+      opacity: 1;
+      padding: 6px 14px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: #22c55e;
+    }
+
+    /* Stopped state — dot fades out */
+    .update-indicator.stopped .update-dot { background: rgba(148,163,184,0.15); }
+
+    @keyframes dotPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.7; }
+    }
+    @keyframes ringPulse {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.8); opacity: 0; }
+    }
 
     /* Responsive */
     @media (max-width: 768px) {
@@ -1087,41 +1150,47 @@
 
     // Auto-refresh: poll for new build version
     (function() {
-      const POLL_INTERVAL = 10000; // 10 seconds
-      const MAX_POLLS = 60;       // stop after 10 minutes
+      const POLL_INTERVAL = 10000;
+      const MAX_POLLS = 60;
       let pollCount = 0;
 
       const currentVersion = document.querySelector('meta[name="build-version"]')?.content;
       if (!currentVersion) return;
 
       const indicator = document.createElement('div');
-      indicator.className = 'update-indicator';
-      indicator.innerHTML = '<div class="update-spinner"></div><span>Checking for updates...</span>';
+      indicator.className = 'update-indicator idle';
+      indicator.innerHTML = '<span class="update-label"></span><div class="update-dot"></div>';
       document.body.appendChild(indicator);
+
+      const label = indicator.querySelector('.update-label');
+
+      function setState(state, text) {
+        indicator.className = 'update-indicator ' + state;
+        label.textContent = text || '';
+      }
 
       function checkForUpdate() {
         if (pollCount >= MAX_POLLS) {
-          indicator.classList.remove('visible');
+          setState('stopped', '');
           return;
         }
         pollCount++;
-        indicator.classList.add('visible');
+        setState('checking', 'Checking for updates...');
 
         fetch(window.location.href + '?_cb=' + Date.now(), { cache: 'no-store' })
           .then(res => res.text())
           .then(html => {
             const match = html.match(/<meta\s+name="build-version"\s+content="([^"]+)"/);
             if (match && match[1] !== currentVersion) {
-              indicator.classList.add('found');
-              indicator.querySelector('span').textContent = 'Update found! Reloading...';
-              setTimeout(() => window.location.reload(), 1500);
+              setState('found', 'New version detected! Reloading...');
+              setTimeout(() => window.location.reload(), 2000);
             } else {
-              indicator.classList.remove('visible');
+              setTimeout(() => setState('idle', ''), 800);
               setTimeout(checkForUpdate, POLL_INTERVAL);
             }
           })
           .catch(() => {
-            indicator.classList.remove('visible');
+            setTimeout(() => setState('idle', ''), 800);
             setTimeout(checkForUpdate, POLL_INTERVAL);
           });
       }
