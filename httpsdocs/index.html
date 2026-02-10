@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="build-version" content="1770692126">
   <title>AI-Powered Development Demo</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
@@ -494,6 +495,45 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* Auto-refresh indicator */
+    .update-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+    }
+    .update-indicator.visible { opacity: 1; transform: translateY(0); }
+    .update-indicator.found { border-color: #22c55e; color: #22c55e; }
+    .update-spinner {
+      width: 10px; height: 10px;
+      border: 2px solid var(--text-muted);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .update-indicator.found .update-spinner {
+      border-color: #22c55e;
+      border-top-color: transparent;
+      animation: none;
+      border-top-color: #22c55e;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Responsive */
     @media (max-width: 768px) {
@@ -1044,6 +1084,50 @@
         document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
       });
     });
+
+    // Auto-refresh: poll for new build version
+    (function() {
+      const POLL_INTERVAL = 10000; // 10 seconds
+      const MAX_POLLS = 60;       // stop after 10 minutes
+      let pollCount = 0;
+
+      const currentVersion = document.querySelector('meta[name="build-version"]')?.content;
+      if (!currentVersion) return;
+
+      const indicator = document.createElement('div');
+      indicator.className = 'update-indicator';
+      indicator.innerHTML = '<div class="update-spinner"></div><span>Checking for updates...</span>';
+      document.body.appendChild(indicator);
+
+      function checkForUpdate() {
+        if (pollCount >= MAX_POLLS) {
+          indicator.classList.remove('visible');
+          return;
+        }
+        pollCount++;
+        indicator.classList.add('visible');
+
+        fetch(window.location.href + '?_cb=' + Date.now(), { cache: 'no-store' })
+          .then(res => res.text())
+          .then(html => {
+            const match = html.match(/<meta\s+name="build-version"\s+content="([^"]+)"/);
+            if (match && match[1] !== currentVersion) {
+              indicator.classList.add('found');
+              indicator.querySelector('span').textContent = 'Update found! Reloading...';
+              setTimeout(() => window.location.reload(), 1500);
+            } else {
+              indicator.classList.remove('visible');
+              setTimeout(checkForUpdate, POLL_INTERVAL);
+            }
+          })
+          .catch(() => {
+            indicator.classList.remove('visible');
+            setTimeout(checkForUpdate, POLL_INTERVAL);
+          });
+      }
+
+      setTimeout(checkForUpdate, POLL_INTERVAL);
+    })();
   </script>
 </body>
 </html>
