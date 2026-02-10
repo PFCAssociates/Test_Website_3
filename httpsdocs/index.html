@@ -1,10 +1,10 @@
-<!-- Version: 1.6 | Updated: 2026-02-10 -->
+<!-- Version: 1.7 | Updated: 2026-02-10 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="build-version" content="1770693743">
+  <meta name="build-version" content="1770693884">
   <title>AI-Powered Development Demo</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
@@ -639,6 +639,17 @@
       backdrop-filter: blur(12px);
       border-radius: 8px;
     }
+    .update-version {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: rgba(148,163,184,0.4);
+      margin-left: 8px;
+      white-space: nowrap;
+      transition: color 0.4s;
+    }
+    .update-indicator.checking .update-version { color: var(--text-muted); }
+    .update-indicator.found .update-version { color: #22c55e; }
+
     /* Idle state — small muted dot */
     .update-indicator.idle .update-dot { background: rgba(148,163,184,0.4); }
 
@@ -1398,9 +1409,17 @@
       const currentVersion = document.querySelector('meta[name="build-version"]')?.content;
       if (!currentVersion) return;
 
+      // Get file version from the HTML comment header
+      const firstNode = document.childNodes[0];
+      let fileVersion = '';
+      if (firstNode && firstNode.nodeType === 8) {
+        const match = firstNode.textContent.match(/Version:\s*([\d.]+)/);
+        if (match) fileVersion = 'v' + match[1];
+      }
+
       const indicator = document.createElement('div');
       indicator.className = 'update-indicator idle';
-      indicator.innerHTML = '<span class="update-label"></span><div class="update-dot"></div>';
+      indicator.innerHTML = '<span class="update-label"></span><div class="update-dot"></div><span class="update-version">' + fileVersion + '</span>';
       document.body.appendChild(indicator);
 
       const label = indicator.querySelector('.update-label');
