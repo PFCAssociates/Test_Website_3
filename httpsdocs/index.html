@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="build-version" content="1770692490">
+  <meta name="build-version" content="1770692657">
   <title>AI-Powered Development Demo</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
@@ -474,6 +474,102 @@
     .timeline-item p { color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; }
     .timeline-time { font-size: 0.8rem; color: var(--accent); font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; }
 
+    /* Terminal text field */
+    .terminal {
+      background: rgba(0,0,0,0.6);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      transition: border-color 0.4s;
+    }
+    .terminal:focus-within { border-color: var(--accent); }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-bar .code-dot { flex-shrink: 0; }
+    .terminal-title {
+      flex: 1;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .terminal-body { padding: 28px; }
+    .terminal-prompt {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .terminal-prompt .prompt-symbol {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1rem;
+      user-select: none;
+    }
+    .terminal-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      caret-color: var(--accent);
+    }
+    .terminal-input::placeholder { color: rgba(148,163,184,0.4); }
+    .terminal-output {
+      min-height: 80px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      margin-top: 16px;
+    }
+    .terminal-output-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      opacity: 0;
+      transform: translateX(-10px);
+      animation: lineIn 0.3s ease forwards;
+    }
+    @keyframes lineIn {
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .output-echo {
+      font-size: clamp(1.5rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      background: linear-gradient(135deg, var(--accent), var(--accent3), var(--accent2));
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradient-shift 3s ease infinite, lineIn 0.3s ease forwards;
+      padding: 12px 0;
+      word-break: break-word;
+    }
+    .output-particles-canvas {
+      width: 100%;
+      height: 120px;
+      display: block;
+      margin-top: 8px;
+      border-radius: 8px;
+    }
+    .terminal-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: rgba(148,163,184,0.3);
+      margin-top: 12px;
+      text-align: right;
+    }
+
     /* Footer */
     footer {
       position: relative;
@@ -763,6 +859,38 @@
           </div>
         </div>
         <canvas class="demo-canvas" id="demoCanvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Terminal Playground -->
+  <section id="playground">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">Playground</div>
+        <h2 class="section-title">Try It Yourself</h2>
+        <p class="section-desc">Type anything below and watch it come to life.</p>
+      </div>
+
+      <div class="terminal reveal">
+        <div class="terminal-bar">
+          <div class="code-dot"></div>
+          <div class="code-dot"></div>
+          <div class="code-dot"></div>
+          <span class="terminal-title">playground &mdash; interactive</span>
+          <div style="width:36px"></div>
+        </div>
+        <div class="terminal-body">
+          <div class="terminal-prompt">
+            <span class="prompt-symbol">&gt;</span>
+            <input type="text" class="terminal-input" id="terminalInput" placeholder="Type something amazing..." autocomplete="off" spellcheck="false">
+          </div>
+          <div class="terminal-output" id="terminalOutput">
+            <div class="terminal-output-line" style="color: var(--text-muted);">Waiting for input...</div>
+          </div>
+          <canvas class="output-particles-canvas" id="textParticles"></canvas>
+          <div class="terminal-hint">press enter to submit &middot; characters spawn particles</div>
+        </div>
       </div>
     </div>
   </section>
@@ -1135,6 +1263,124 @@
       requestAnimationFrame(drawDemo);
     }
     drawDemo();
+
+    // Terminal playground
+    const termInput = document.getElementById('terminalInput');
+    const termOutput = document.getElementById('terminalOutput');
+    const tpCanvas = document.getElementById('textParticles');
+    const tpCtx = tpCanvas.getContext('2d');
+    let textSparks = [];
+
+    function resizeTP() {
+      tpCanvas.width = tpCanvas.offsetWidth;
+      tpCanvas.height = 120;
+    }
+    resizeTP();
+    window.addEventListener('resize', resizeTP);
+
+    class TextSpark {
+      constructor(x) {
+        this.x = x;
+        this.y = tpCanvas.height / 2;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 3 + 1;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.life = 1;
+        this.decay = Math.random() * 0.02 + 0.008;
+        this.size = Math.random() * 3 + 1;
+        this.hue = 240 + Math.random() * 80;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.02;
+        this.life -= this.decay;
+      }
+      draw() {
+        tpCtx.beginPath();
+        tpCtx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+        tpCtx.fillStyle = `hsla(${this.hue}, 80%, 65%, ${this.life})`;
+        tpCtx.fill();
+      }
+    }
+
+    function animateSparks() {
+      tpCtx.clearRect(0, 0, tpCanvas.width, tpCanvas.height);
+      textSparks = textSparks.filter(s => s.life > 0);
+      textSparks.forEach(s => { s.update(); s.draw(); });
+
+      // Draw connections between nearby sparks
+      for (let i = 0; i < textSparks.length; i++) {
+        for (let j = i + 1; j < textSparks.length; j++) {
+          const dx = textSparks[i].x - textSparks[j].x;
+          const dy = textSparks[i].y - textSparks[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 60) {
+            tpCtx.beginPath();
+            tpCtx.moveTo(textSparks[i].x, textSparks[i].y);
+            tpCtx.lineTo(textSparks[j].x, textSparks[j].y);
+            const alpha = 0.15 * (1 - dist / 60) * Math.min(textSparks[i].life, textSparks[j].life);
+            tpCtx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
+            tpCtx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animateSparks);
+    }
+    animateSparks();
+
+    function spawnSparks(charIndex, total) {
+      const x = (charIndex / Math.max(total, 1)) * tpCanvas.width * 0.8 + tpCanvas.width * 0.1;
+      for (let i = 0; i < 6; i++) {
+        textSparks.push(new TextSpark(x));
+      }
+    }
+
+    termInput.addEventListener('input', () => {
+      const val = termInput.value;
+      if (val.length > 0) {
+        spawnSparks(val.length - 1, val.length);
+      }
+    });
+
+    let commandHistory = [];
+
+    termInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && termInput.value.trim()) {
+        const text = termInput.value.trim();
+        commandHistory.push(text);
+        termOutput.innerHTML = '';
+
+        // Echo the command
+        const cmdLine = document.createElement('div');
+        cmdLine.className = 'terminal-output-line';
+        cmdLine.style.color = 'var(--text-muted)';
+        cmdLine.textContent = '> ' + text;
+        termOutput.appendChild(cmdLine);
+
+        // Big stylized output
+        const echo = document.createElement('div');
+        echo.className = 'output-echo';
+        echo.textContent = text;
+        echo.style.animationDelay = '0.1s';
+        termOutput.appendChild(echo);
+
+        // Info line
+        const info = document.createElement('div');
+        info.className = 'terminal-output-line';
+        info.style.cssText = 'color: var(--accent); animation-delay: 0.2s; margin-top: 8px;';
+        info.textContent = `[${text.length} chars \u00b7 ${commandHistory.length} commands \u00b7 ${textSparks.length} particles alive]`;
+        termOutput.appendChild(info);
+
+        // Big burst of particles
+        for (let i = 0; i < text.length; i++) {
+          spawnSparks(i, text.length);
+        }
+
+        termInput.value = '';
+      }
+    });
 
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(a => {
