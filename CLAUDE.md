@@ -11,16 +11,17 @@
 
 ## File Version Headers
 Every file must have a version comment as the **first line**, using the appropriate comment syntax for that file type:
-- HTML: `<!-- Version: 1.0 | Updated: 2026-02-10 -->`
-- CSS: `/* Version: 1.0 | Updated: 2026-02-10 */`
-- JS: `// Version: 1.0 | Updated: 2026-02-10`
-- Python: `# Version: 1.0 | Updated: 2026-02-10`
-- For any file type not listed above, use the HTML variant: `<!-- Version: 1.0 | Updated: 2026-02-10 -->`
+- HTML: `<!-- Version: 01.00 | Updated: 2026-02-10 -->`
+- CSS: `/* Version: 01.00 | Updated: 2026-02-10 */`
+- JS: `// Version: 01.00 | Updated: 2026-02-10`
+- Python: `# Version: 01.00 | Updated: 2026-02-10`
+- For any file type not listed above, use the HTML variant: `<!-- Version: 01.00 | Updated: 2026-02-10 -->`
 
 Rules:
-- Increment the version number each commit that modifies the file (1.0 → 1.1 → 1.2, etc.)
+- Version format is `XX.YY` with zero-padded two-digit major and two-digit minor (e.g., `01.00`, `01.01`, `01.02`)
+- Increment by `.01` each commit that modifies the file (01.00 → 01.01 → 01.02, etc.)
 - Update the date to the current date
-- New files start at version 1.0
+- New files start at version 01.00
 
 ## Build Version (Auto-Refresh)
 HTML files have a `<meta name="build-version" content="TIMESTAMP">` tag in the `<head>`. This powers the auto-refresh system that polls every 10 seconds and reloads the page when a new version is detected.
